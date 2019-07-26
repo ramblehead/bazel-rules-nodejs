@@ -1,0 +1,23 @@
+load("@npm_bazel_jasmine//:defaults.bzl", "jasmine_node_test")
+load("@npm_bazel_rollup//:from_src.bzl", "rollup_bundle")
+
+rollup_bundle(
+    name = "bundle",
+    srcs = ["bar.js"],
+    entry_point = ":foo.js",
+    #globals = {"some_global_var": "runtime_name_of_global_var"},
+    #license_banner = ":license.txt",
+    deps = [
+        #"//internal/e2e/rollup/fum:fumlib",
+        #"@npm//hello",
+    ],
+)
+
+jasmine_node_test(
+    name = "test",
+    srcs = [
+        "rollup_spec.js",
+    ],
+    deps = [
+    ],
+)

@@ -77,6 +77,16 @@ local_repository(
     path = "packages/stylus/src",
 )
 
+local_repository(
+    name = "npm_bazel_terser",
+    path = "packages/terser/src",
+)
+
+local_repository(
+    name = "npm_bazel_rollup",
+    path = "packages/rollup/src",
+)
+
 #
 # Install rules_nodejs dev dependencies
 #
