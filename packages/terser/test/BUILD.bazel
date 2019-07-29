@@ -1,4 +1,4 @@
-load("@npm_bazel_jasmine//:defaults.bzl", "jasmine_node_test")
+load("@npm_bazel_jasmine//:index.from_src.bzl", "jasmine_node_test")
 load("@npm_bazel_terser//:from_src.bzl", "terser")
 
 # Case 1: optimize an InputArtifact

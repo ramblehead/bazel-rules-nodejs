@@ -13,6 +13,8 @@
 # limitations under the License.
 "Protocol Buffers"
 
+load("@build_bazel_rules_nodejs//:providers.bzl", "JSInfo", "TypingsInfo")
+
 def _run_pbjs(actions, executable, output_name, proto_files, suffix = ".js", wrap = "amd", amd_name = ""):
     js_file = actions.declare_file(output_name + suffix)
 
@@ -103,7 +105,15 @@ def _ts_proto_library(ctx):
 
     # Return a structure that is compatible with the deps[] of a ts_library.
     return struct(
-        files = depset([dts]),
+        providers = [
+            DefaultInfo(files = depset([dts])),
+            TypingsInfo(dts = depset([dts])),
+            JSInfo(
+                named = depset([js_es5]),
+                esnext = depset([js_es6]),
+            ),
+        ],
+        # TODO: remove when consumers are updated
         typescript = struct(
             declarations = depset([dts]),
             transitive_declarations = depset([dts]),

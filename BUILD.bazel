@@ -11,7 +11,10 @@ exports_files([
 
 bzl_library(
     name = "bzl",
-    srcs = ["defs.bzl"],
+    srcs = [
+        "defs.bzl",
+        "providers.bzl",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         "//internal/history-server:bzl",
@@ -38,6 +41,7 @@ npm_package(
         "LICENSE",
         "defs.bzl",
         "package.bzl",
+        "providers.bzl",
     ],
     # Don't rename BUILD files as this package is not published to npm
     # but is compressed in "release" below and published as a .tar.gz to GitHub
