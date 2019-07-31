@@ -22,7 +22,19 @@ ROLLUP_BUNDLE_ATTRS = {
 ROLLUP_BUNDLE_OUTS = {}
 
 def _rollup_bundle(ctx):
-    return []
+    outputs = []
+    args = ctx.actions.Args()
+
+    ctx.actions.run(
+        inputs = [],
+        outputs = outputs,
+        executable = ctx.executable.rollup_bin,
+        arguments = [args],
+    )
+
+    return [
+        DefaultInfo(files = depset(outputs)),
+    ]
 
 rollup_bundle = rule(
     implementation = _rollup_bundle,

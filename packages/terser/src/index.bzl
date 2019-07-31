@@ -8,6 +8,16 @@ TERSER_ATTRS = {
         allow_files = True,
         mandatory = True,
     ),
+    # TODO: wire up this attribute
+    "config_file": attr.label(
+        doc = """A JSON file containing Terser minify() options.
+
+        This is the file you would pass to the --config-file argument in terser's CLI.
+        https://github.com/terser-js/terser#minify-options documents the content of the file.
+        
+        If this isn't supplied, Bazel will use some default settings.""",
+        allow_single_file = True,
+    ),
     "debug": attr.bool(
         doc = """Configure terser to produce more readable output.
 
@@ -115,10 +125,10 @@ def _terser(ctx):
         progress_message = "Optimizing JavaScript %s [terser]" % ctx.outputs.optimized.short_path,
     )
     return [
-        DefaultInfo(files = depset([ctx.outputs.optimized])),
+        DefaultInfo(files = depset(outputs)),
     ]
 
-terser = rule(
+terser_minified = rule(
     implementation = _terser,
     attrs = TERSER_ATTRS,
     outputs = TERSER_OUTS,

@@ -18,6 +18,5 @@ jasmine_node_test(
     srcs = [
         "rollup_spec.js",
     ],
-    deps = [
-    ],
+    deps = [":bundle"],
 )

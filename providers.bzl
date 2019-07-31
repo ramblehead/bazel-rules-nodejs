@@ -20,17 +20,24 @@ If users really need to produce both in a single build, they'll need two rules w
                   These files should typically be named "foo.mjs"
                   TODO: should we require that?
                   Historical note: this was the typescript.es6_sources output""",
+
         # TODO: bike-shed the name
         "named": """JavaScript files whose module name is self-contained.
                  For example named AMD/UMD or goog.module format.
                  These files can be efficiently served with the concatjs bundler.
+                 These outputs should be named "foo.umd.js"
+                 (note that renaming it from "foo.js" doesn't affect the module id)
                  Historical note: this was the typescript.es5_sources output""",
-        # TODO: bike-shed the name
-        "user": """JavaScript files whose format is user-controlled.
-                Consumers cannot make any assumptions about how to correctly handle it.""",
+
+        # TODO: do we need something like a third flavor?
+        # Or could this just be the DefaultInfo of tools that want to produce three flavors?
+        #"user": """JavaScript files whose format is user-controlled.
+        #        Consumers cannot make any assumptions about how to correctly handle it.""",
+
         # TODO: what about sourcemaps?
         # Each .js file in the other provider outputs might want to come with a .map
         # maybe we should return a depset of tuples instead?
+        # We think the .map files can just be mixed with .js files in the above providers
     },
 )
 

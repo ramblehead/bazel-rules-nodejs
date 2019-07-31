@@ -1,8 +1,8 @@
 load("@npm_bazel_jasmine//:index.from_src.bzl", "jasmine_node_test")
-load("@npm_bazel_terser//:index.from_src.bzl", "terser")
+load("@npm_bazel_terser//:index.from_src.bzl", "terser_minified")
 
 # Case 1: optimize InputArtifacts
-terser(
+terser_minified(
     name = "case1",
     srcs = [
         "src1.js",
@@ -19,7 +19,7 @@ produces_js_as_defaultinfo(
     srcs = ["src2.js"],
 )
 
-terser(
+terser_minified(
     name = "case2",
     srcs = [":src2_in"],
     sourcemap = False,

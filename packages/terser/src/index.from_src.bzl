@@ -17,10 +17,10 @@
 
 load(
     ":index.bzl",
-    _terser = "terser",
+    _terser = "terser_minified",
 )
 
-def terser(**kwargs):
+def terser_minified(**kwargs):
     _terser(
         # Override to point to the one installed by build_bazel_rules_nodejs in the root
         terser_bin = "@npm//terser/bin:terser",

@@ -1,5 +1,5 @@
 load("@npm_bazel_jasmine//:index.from_src.bzl", "jasmine_node_test")
-load("@npm_bazel_terser//:index.from_src.bzl", "terser")
+load("@npm_bazel_terser//:index.from_src.bzl", "terser_minified")
 
 # Case 3: Use the JS provider to find inputs from *_bundle rule
 load(":produces_jsinfo.bzl", "produces_jsinfo")
@@ -8,7 +8,7 @@ produces_jsinfo(
     name = "src3_in",
 )
 
-terser(
+terser_minified(
     name = "case3",
     srcs = [":src3_in"],
     sourcemap = False,
