@@ -1,10 +1,14 @@
 load("@npm_bazel_jasmine//:index.from_src.bzl", "jasmine_node_test")
-load("@npm_bazel_terser//:from_src.bzl", "terser")
+load("@npm_bazel_terser//:index.from_src.bzl", "terser")
 
-# Case 1: optimize an InputArtifact
+# Case 1: optimize InputArtifacts
 terser(
     name = "case1",
-    src = "src1.js",
+    srcs = [
+        "src1.js",
+        "src1b.js",
+    ],
+    sourcemap = False,
 )
 
 # Case 2: get the JS file from DefaultInfo of a dep
@@ -12,15 +16,14 @@ load(":produces_js_as_defaultinfo.bzl", "produces_js_as_defaultinfo")
 
 produces_js_as_defaultinfo(
     name = "src2_in",
-    src = "src2.js",
+    srcs = ["src2.js"],
 )
 
 terser(
     name = "case2",
-    src = ":src2_in",
+    srcs = [":src2_in"],
+    sourcemap = False,
 )
-
-# Case 3: Use the JS provider to find inputs from *_bundle rule
 
 jasmine_node_test(
     name = "test",
@@ -32,5 +35,3 @@ jasmine_node_test(
         ":case2.js",
     ],
 )
-
-# Case 4: test that terser also outputs a JS provider

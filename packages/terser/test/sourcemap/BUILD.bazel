@@ -1,0 +1,21 @@
+load("@npm_bazel_jasmine//:index.from_src.bzl", "jasmine_node_test")
+load("@npm_bazel_terser//:index.from_src.bzl", "terser")
+
+terser(
+    name = "case1",
+    srcs = [
+        "src1.js",
+    ],
+)
+
+jasmine_node_test(
+    name = "test",
+    srcs = [
+        "terser_spec.js",
+    ],
+    data = ["@npm//source-map-support"],
+    deps = [
+        ":case1.js",
+        ":case1.js.map",
+    ],
+)

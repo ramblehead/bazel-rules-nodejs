@@ -3,8 +3,8 @@
 load("@build_bazel_rules_nodejs//:providers.bzl", "JSInfo")
 
 def _produces_jsinfo(ctx):
-    named_js = ctx.actions.declare_file(ctx.name + ".js")
-    esnext_js = ctx.actions.declare_file(ctx.name + ".mjs")
+    named_js = ctx.actions.declare_file(ctx.label.name + ".js")
+    esnext_js = ctx.actions.declare_file(ctx.label.name + ".mjs")
     ctx.actions.write(named_js, """
     (function (factory) {
     if (typeof module === "object" && typeof module.exports === "object") {
@@ -25,7 +25,8 @@ def _produces_jsinfo(ctx):
 
     return [
         JSInfo(
-            named = depset(named_js),
+            named = depset([named_js]),
+            esnext = depset([esnext_js]),
         ),
     ]
 
