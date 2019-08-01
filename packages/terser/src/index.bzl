@@ -39,19 +39,18 @@ TERSER_ATTRS = {
 }
 
 TERSER_OUTS = {
+    # TODO: should this be {name}.mjs ?
     "optimized": "%{name}.js",
 }
 
 # Translate from the things we accept in the `src` attribute
-# to find that one file
-def _find_srcs(srcs):
+def _find_srcs(srcs, flavor):
     srcfiles = []
     for src in srcs:
         if (JSInfo in src):
-            srcfiles.extend(src[JSInfo].esnext.to_list())
+            srcfiles.extend(getattr(src[JSInfo], flavor).to_list())
         else:
             srcfiles.extend(src.files.to_list())
-
     return srcfiles
 
 # Converts a dict to a struct, recursing into a single level of nested dicts.
@@ -63,20 +62,17 @@ def _dict_to_struct(d):
             d[key] = struct(**value)
     return struct(**d)
 
-def _write_terser_config(ctx, options):
-    opts = ctx.actions.declare_file("_%s.minify_options.json" % ctx.label.name)
-    ctx.actions.write(opts, _dict_to_struct(options).to_json())
-    return opts
+def run_terser(ctx, flavor, output):
+    """TODO: doc"""
 
-def _terser(ctx):
     # CLI arguments; see https://www.npmjs.com/package/terser#command-line-usage
     args = ctx.actions.args()
 
-    srcs = _find_srcs(ctx.attr.srcs)
+    srcs = _find_srcs(ctx.attr.srcs, flavor)
     args.add_all([src.path for src in srcs])
 
-    outputs = [ctx.outputs.optimized]
-    args.add_all(["--output", ctx.outputs.optimized.path])
+    outputs = [output]
+    args.add_all(["--output", output])
 
     # TODO: also check the env.DEBUG variable
     debug = ctx.attr.debug
@@ -100,7 +96,7 @@ def _terser(ctx):
     }
 
     if ctx.attr.sourcemap:
-        map_output = ctx.actions.declare_file(ctx.outputs.optimized.basename + ".map", sibling = ctx.outputs.optimized)
+        map_output = ctx.actions.declare_file(output.basename + ".map", sibling = output)
         outputs.append(map_output)
 
         # Source mapping options are comma-packed into one argv
@@ -114,7 +110,8 @@ def _terser(ctx):
         args.add_all(["--source-map", ",".join(source_map_opts)])
         minify_options["sourceMap"] = {"filename": map_output.path}
 
-    opts = _write_terser_config(ctx, minify_options)
+    opts = ctx.actions.declare_file("_%s.%s.minify_options.json" % (ctx.label.name, flavor))
+    ctx.actions.write(opts, _dict_to_struct(minify_options).to_json())
     args.add_all(["--config-file", opts.path])
 
     ctx.actions.run(
@@ -122,10 +119,20 @@ def _terser(ctx):
         outputs = outputs,
         executable = ctx.executable.terser_bin,
         arguments = [args],
-        progress_message = "Optimizing JavaScript %s [terser]" % ctx.outputs.optimized.short_path,
+        progress_message = "Optimizing %s JavaScript %s [terser]" % (flavor, output.short_path),
     )
+    return outputs
+
+def _terser(ctx):
+    esnext_outputs = run_terser(ctx, "esnext", ctx.outputs.optimized)
+
+    # NB: this one will only run if some downstream rule requests the JSInfo provider
+    named_js = ctx.actions.declare_file(ctx.outputs.optimized.path.replace(".js", ".umd.js"))
+    named_outputs = run_terser(ctx, "named", named_js)
+
     return [
-        DefaultInfo(files = depset(outputs)),
+        DefaultInfo(files = depset(esnext_outputs)),
+        JSInfo(esnext = depset(esnext_outputs), named = depset(named_outputs)),
     ]
 
 terser_minified = rule(

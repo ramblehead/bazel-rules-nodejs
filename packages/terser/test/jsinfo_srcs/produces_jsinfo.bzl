@@ -3,31 +3,14 @@
 load("@build_bazel_rules_nodejs//:providers.bzl", "JSInfo")
 
 def _produces_jsinfo(ctx):
-    named_js = ctx.actions.declare_file(ctx.label.name + ".js")
-    esnext_js = ctx.actions.declare_file(ctx.label.name + ".mjs")
-    ctx.actions.write(named_js, """
-    (function (factory) {
-    if (typeof module === "object" && typeof module.exports === "object") {
-        var v = factory(require, exports);
-        if (v !== undefined) module.exports = v;
-    }
-    else if (typeof define === "function" && define.amd) {
-        define("some_module_name", ["require", "exports", "./dep"], factory);
-    }
-})(function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const dep = require("./dep");
-});
-""")
-
-    ctx.actions.write(esnext_js, """import * as dep from './dep';""")
-
     return [
         JSInfo(
-            named = depset([named_js]),
-            esnext = depset([esnext_js]),
+            named = depset(ctx.files.named_srcs),
+            esnext = depset(ctx.files.esnext_srcs),
         ),
     ]
 
-produces_jsinfo = rule(_produces_jsinfo)
+produces_jsinfo = rule(_produces_jsinfo, attrs = {
+    "esnext_srcs": attr.label_list(allow_files = True),
+    "named_srcs": attr.label_list(allow_files = True),
+})
