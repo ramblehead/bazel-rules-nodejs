@@ -217,9 +217,17 @@ def tsc_wrapped_tsconfig(
     )
     config["bazelOptions"]["nodeModulesPrefix"] = node_modules_root
 
-    # Override the target so we use es2015 for devmode
-    # Since g3 isn't ready to do this yet
-    config["compilerOptions"]["target"] = "es2015"
+    rh_target_override = getattr(ctx.attr, "rh_target_override")
+    if(rh_target_override):
+        config["compilerOptions"]["target"] = rh_target_override
+    else:
+        # Override the target so we use es2015 for devmode
+        # Since g3 isn't ready to do this yet
+        config["compilerOptions"]["target"] = 'es2015'
+
+    rh_module_override = getattr(ctx.attr, "rh_module_override")
+    if(rh_module_override):
+        config["compilerOptions"]["module"] = rh_module_override
 
     # It's fine for users to have types[] in their tsconfig.json to help the editor
     # know which of the node_modules/@types/* entries to include in the program.
@@ -391,6 +399,23 @@ either:
 - Give an explicit `tsconfig` attribute to all `ts_library` targets
             """,
             allow_single_file = True,
+        ),
+        "rh_target_override": attr.string(
+            doc = """ramblehead's target override""",
+            default = "",
+            values = [
+                '', "es3", "es5", "es6",
+                "es2015", "es2016", "es2017", "es2018",
+                "esnext",
+            ],
+        ),
+        "rh_module_override": attr.string(
+            doc = """ramblehead's module override""",
+            default = "",
+            values = [
+                "", "none", "commonjs", "amd", "system",
+                "umd", "es6", "es2015", "esnext",
+            ],
         ),
         "tsickle_typed": attr.bool(
             default = True,
