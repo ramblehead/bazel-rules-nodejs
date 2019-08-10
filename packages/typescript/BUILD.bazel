@@ -31,6 +31,7 @@ genrule(
 
 npm_package(
     name = "npm_package",
+    # rename_build_files = False,
     srcs = [
         "@npm_bazel_typescript//:package_contents",
     ],
