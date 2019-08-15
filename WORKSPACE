@@ -96,19 +96,38 @@ install_bazel_dependencies()
 # Install npm_bazel_typescript dependencies
 #
 
-# Uncomment for local development
-local_repository(
-    name = "build_bazel_rules_typescript",
-    path = "../bazel-rules-typescript",
+git_repository(
+  name = "rh_bazel_utils",
+  remote = "https://github.com/ramblehead/bazel-utils.git",
+  commit = "456cef0e8af31c0fd98645381c14f2338b748226",
+  shallow_since = "1565016199 +0100",
 )
 
-# We use git_repository since Renovate knows how to update it.
-# With http_archive it only sees releases/download/*.tar.gz urls
-# git_repository(
-#     name = "build_bazel_rules_typescript",
-#     commit = "73ba7764363bbf760593a205329cb676095f53f9",
-#     remote = "http://github.com/bazelbuild/rules_typescript.git",
-# )
+load("@rh_bazel_utils//:index.bzl", "select_repository")
+
+select_repository(
+  key = "local",
+  name = "build_bazel_rules_typescript",
+  repositories = {
+    # This selection does not work yet - need to learn how to apply patch:
+    # https://github.com/bazelbuild/rules_nodejs/issues/998#issuecomment-521317102
+    "default": {
+      # We use git_repository since Renovate knows how to update it.
+      # With http_archive it only sees releases/download/*.tar.gz urls
+      "rule": git_repository,
+      "kwargs": {
+        "remote": "http://github.com/bazelbuild/rules_typescript.git",
+        "commit": "73ba7764363bbf760593a205329cb676095f53f9",
+      },
+    },
+    "local": {
+      "rule": local_repository,
+      "kwargs": {
+        "path": "../bazel-rules-typescript",
+      },
+    },
+  },
+)
 
 # We have a source dependency on build_bazel_rules_typescript
 # so we must repeat its transitive toolchain deps
