@@ -12,89 +12,57 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Dependency-related rules defining our dependency versions.
-
-Fulfills similar role as the package.json file.
+"""Package file which defines npm_bazel_typescript dependencies
 """
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def rules_nodejs_dev_dependencies():
+def rules_typescript_dependencies():
+    print("""DEPRECATION WARNING:
+    rules_typescript_dependencies is no longer needed, and will be removed in a future release.
+    We assume you will fetch rules_nodejs in your WORKSPACE file, and no other dependencies remain here.
+    Simply remove any calls to this function and the corresponding call to
+      load("@npm_bazel_typescript//:package.bzl", "rules_typescript_dependencies")
+    """)
+
+def rules_typescript_dev_dependencies():
     """
-    Fetch dependencies needed for local development, but not needed by users.
+    Fetch dependencies needed for local development.
 
     These are in this file to keep version information in one place, and make the WORKSPACE
     shorter.
+
+    Also this allows other repos to reference our sources with local_repository and install the needed deps.
     """
 
-    # Dependencies for generating documentation
-    http_archive(
-        name = "io_bazel_rules_sass",
-        sha256 = "4f05239080175a3f4efa8982d2b7775892d656bb47e8cf56914d5f9441fb5ea6",
-        url = "https://github.com/bazelbuild/rules_sass/archive/86ca977cf2a8ed481859f83a286e164d07335116.zip",
-        strip_prefix = "rules_sass-86ca977cf2a8ed481859f83a286e164d07335116",
+    # For building ts_devserver and ts_auto_deps binaries
+    # See https://github.com/bazelbuild/rules_go#setup for the latest version.
+    _maybe(
+        http_archive,
+        name = "io_bazel_rules_go",
+        # We need https://github.com/bazelbuild/rules_go/commit/109c520465fcb418f2c4be967f3744d959ad66d3 which
+        # is not part of any 0.16.x release yet. This commit provides runfile resolve support for Windows.
+        urls = ["https://github.com/bazelbuild/rules_go/archive/12a52e9845a5b06a28ffda06d7f2b07ff2320b97.zip"],
+        strip_prefix = "rules_go-12a52e9845a5b06a28ffda06d7f2b07ff2320b97",
+        sha256 = "5c0a059afe51c744c90ae2b33ac70b9b4f4c514715737e2ec0b5fd297400c10d",
     )
 
-    # Needed for @com_github_bazelbuild_buildtools which is used by ts_auto_deps
-    http_archive(
-        name = "io_bazel",
-        url = "https://github.com/bazelbuild/bazel/archive/0.28.1.tar.gz",
-        strip_prefix = "bazel-0.28.1",
-        sha256 = "a3d6a8ba4c6dce86d3b3387a23b04cbdf4c435a58120bd9842588d3845fe689c",
+    # go_repository is defined in bazel_gazelle
+    _maybe(
+        http_archive,
+        name = "bazel_gazelle",
+        urls = ["https://github.com/bazelbuild/bazel-gazelle/archive/c0880f7f9d7048b45be5d36115ec2bf444e723c4.zip"],  # 2018-12-05
+        strip_prefix = "bazel-gazelle-c0880f7f9d7048b45be5d36115ec2bf444e723c4",
+        sha256 = "d9980ae0c91d90aaf9131170adfec4e87464d53e58ce2eb01b350a53e93a87c7",
     )
 
-    # Needed for com_google_protobuf
-    http_archive(
-        name = "zlib",
-        build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
-        sha256 = "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1",
-        strip_prefix = "zlib-1.2.11",
-        urls = ["https://zlib.net/zlib-1.2.11.tar.gz"],
-    )
-
-    http_archive(
-        name = "io_bazel_skydoc",
-        sha256 = "fdc34621839104b57363a258eab9d821b02ff7837923cfe7fb6fd67182780829",
-        strip_prefix = "skydoc-41c28e43dffbae39c52dd4b91932d1209e5a8893",
-        url = "https://github.com/bazelbuild/skydoc/archive/41c28e43dffbae39c52dd4b91932d1209e5a8893.tar.gz",
-    )
-
-    # bazel-skylib master 2019.05.03 to get support for https://github.com/bazelbuild/bazel-skylib/pull/140
-    http_archive(
-        name = "bazel_skylib",
-        sha256 = "afbe4d9d033c007940acd24bb9becf1580a0280ae0b2ebbb5a7cb12912d2c115",
-        strip_prefix = "bazel-skylib-ffad33e9bfc60bdfa98292ca655a4e7035792046",
-        urls = ["https://github.com/bazelbuild/bazel-skylib/archive/ffad33e9bfc60bdfa98292ca655a4e7035792046.tar.gz"],
-    )
-
-    # Gross dep that leaked out of stardoc, see
-    # https://github.com/bazelbuild/skydoc/commit/9283f6a44811423756ab898e98ce410029c12f7b#commitcomment-34488585
-    http_archive(
-        name = "rules_java",
-        sha256 = "bc81f1ba47ef5cc68ad32225c3d0e70b8c6f6077663835438da8d5733f917598",
-        strip_prefix = "rules_java-7cf3cefd652008d0a64a419c34c13bdca6c8f178",
-        urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/rules_java/archive/7cf3cefd652008d0a64a419c34c13bdca6c8f178.zip",
-            "https://github.com/bazelbuild/rules_java/archive/7cf3cefd652008d0a64a419c34c13bdca6c8f178.zip",
-        ],
-    )
-
-    # Needed for Remote Build Execution
-    # See https://releases.bazel.build/bazel-toolchains.html
-    http_archive(
-        name = "bazel_toolchains",
-        sha256 = "55abc3a76e3718e5835e621ee5ba4cb915b325688bbf8b32f3288f6a5c36d93a",
-        strip_prefix = "bazel-toolchains-be10bee",
-        urls = [
-            "https://github.com/bazelbuild/bazel-toolchains/archive/be10bee.tar.gz",
-        ],
-    )
-
-    http_archive(
-        name = "build_bazel_integration_testing",
-        url = "https://github.com/bazelbuild/bazel-integration-testing/archive/922d2b04bfb9721ab14ff6d26d4a8a6ab847aa07.zip",
-        strip_prefix = "bazel-integration-testing-922d2b04bfb9721ab14ff6d26d4a8a6ab847aa07",
-        sha256 = "490554b98da4ce6e3e1e074e01b81e8440b760d4f086fccf50085a25528bf5cd",
+    # ts_auto_deps depends on com_github_bazelbuild_buildtools
+    _maybe(
+        http_archive,
+        name = "com_github_bazelbuild_buildtools",
+        url = "https://github.com/bazelbuild/buildtools/archive/0.19.2.1.zip",
+        strip_prefix = "buildtools-0.19.2.1",
+        sha256 = "9176a7df34dbed2cf5171eb56271868824560364e60644348219f852f593ae79",
     )
 
 def _maybe(repo_rule, name, **kwargs):

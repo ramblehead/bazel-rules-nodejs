@@ -1,2 +1,0 @@
-def install_bazel_dependencies():
-    """Installs all workspaces listed in bazelWorkspaces of all npm packages"""

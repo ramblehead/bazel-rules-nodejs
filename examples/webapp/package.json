@@ -1,9 +1,0 @@
-{
-    "private": true,
-    "devDependencies": {
-        "@bazel/protractor": "latest"
-    },
-    "scripts": {
-        "test": "bazel test ..."
-    }
-}
