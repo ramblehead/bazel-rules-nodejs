@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+# bazel_skylib mocked out
+# load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@build_bazel_rules_nodejs//:defs.bzl", bzl_library = "dummy_bzl_library")
 load("//:defs.bzl", "nodejs_binary")
 
 licenses(["notice"])  # Apache 2.0
@@ -86,30 +88,7 @@ nodejs_binary(
     visibility = ["//visibility:public"],
 )
 
-# BEGIN-INTERNAL
-# buildozer: disable=load-on-top
-# buildozer: disable=out-of-order-load
-load("@npm_bazel_jasmine//:index.from_src.bzl", "jasmine_node_test")
 
-jasmine_node_test(
-    name = "test",
-    srcs = glob(["*.spec.js"]),
-    data = glob(
-        ["*.js"],
-        exclude = ["*.spec.js"],
-    ),
-    deps = [
-        "@npm//is-builtin-module",
-        "@npm//rollup",
-        "@npm//rollup-plugin-amd",
-        "@npm//rollup-plugin-commonjs",
-        "@npm//rollup-plugin-json",
-        "@npm//rollup-plugin-node-resolve",
-        "@npm//rollup-plugin-sourcemaps",
-    ],
-)
-
-# END-INTERNAL
 filegroup(
     name = "package_contents",
     srcs = glob(

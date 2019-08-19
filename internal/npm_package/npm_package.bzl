@@ -193,15 +193,12 @@ npm_package(
 )
 ```
 
-You can use a pair of `// BEGIN-INTERNAL ... // END-INTERNAL` comments to mark regions of files that should be elided during publishing.
+You can use a pair of `` comments to mark regions of files that should be elided during publishing.
 For example:
 
 ```javascript
 function doThing() {
-    // BEGIN-INTERNAL
-    // This is a secret internal-only comment
-    doInternalOnlyThing();
-    // END-INTERNAL
+    
 }
 ```
 

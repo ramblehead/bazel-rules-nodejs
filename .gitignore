@@ -1,9 +1,0 @@
-.idea
-rules_nodejs-*.tar.gz
-dist
-bazel-out
-/e2e/*/bazel-*
-/examples/*/bazel-*
-/packages/*/bazel-*
-node_modules
-!/third_party/npm/node_modules
