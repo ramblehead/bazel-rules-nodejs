@@ -22,8 +22,14 @@ load("//internal:ts_config.bzl", _ts_config = "ts_config")
 load("//internal:ts_repositories.bzl", _ts_setup_workspace = "ts_setup_workspace")
 load("//internal/devserver:ts_devserver.bzl", _ts_devserver = "ts_devserver_macro")
 
+load("//internal:rh_settings.bzl", _rh_target = "rh_target")
+load("//internal:rh_settings.bzl", _rh_module = "rh_module")
+
 ts_setup_workspace = _ts_setup_workspace
 ts_library = _ts_library
 ts_config = _ts_config
 ts_devserver = _ts_devserver
+
+rh_target = _rh_target
+rh_module = _rh_module
 # If adding rules here also add to index.docs.bzl

@@ -22,6 +22,8 @@ load("@build_bazel_rules_typescript//internal:common/compilation.bzl", "COMMON_A
 load("@build_bazel_rules_typescript//internal:common/tsconfig.bzl", "create_tsconfig")
 load("//internal:ts_config.bzl", "TsConfigInfo")
 
+load(":rh_settings.bzl", "RhTargetProvider", "RhModuleProvider")
+
 _DEFAULT_COMPILER = "@npm//@bazel/typescript/bin:tsc_wrapped"
 _DEFAULT_NODE_MODULES = Label("@npm//typescript:typescript__typings")
 
@@ -217,9 +219,17 @@ def tsc_wrapped_tsconfig(
     )
     config["bazelOptions"]["nodeModulesPrefix"] = node_modules_root
 
-    # Override the target so we use es2015 for devmode
-    # Since g3 isn't ready to do this yet
-    config["compilerOptions"]["target"] = "es2015"
+    rh_target_override = ctx.attr.rh_target_override[RhTargetProvider].target
+    if(rh_target_override == "default"):
+        # Override the target so we use es2015 for devmode
+        # Since g3 isn't ready to do this yet
+        config["compilerOptions"]["target"] = 'es2015'
+    else:
+        config["compilerOptions"]["target"] = rh_target_override
+
+    rh_module_override = ctx.attr.rh_module_override[RhModuleProvider].module
+    if(rh_module_override != "default"):
+        config["compilerOptions"]["module"] = rh_module_override
 
     # It's fine for users to have types[] in their tsconfig.json to help the editor
     # know which of the node_modules/@types/* entries to include in the program.
@@ -264,6 +274,7 @@ def _ts_library_impl(ctx):
     ts_providers = compile_ts(
         ctx,
         is_library = True,
+        RhTargetProvider = RhTargetProvider,
         deps = ctx.attr.deps,
         compile_action = _compile_action,
         devmode_compile_action = _devmode_compile_action,
@@ -410,6 +421,8 @@ either:
             """,
             allow_single_file = True,
         ),
+        "rh_target_override": attr.label(default = ":rh_target_override"),
+        "rh_module_override": attr.label(default = ":rh_module_override"),
         "tsickle_typed": attr.bool(
             default = True,
             doc = "If using tsickle, instruct it to translate types to ClosureJS format",

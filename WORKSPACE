@@ -104,20 +104,20 @@ install_bazel_dependencies()
 #
 
 # Uncomment for local development
-# local_repository(
-#     name = "build_bazel_rules_typescript",
-#     path = "../rules_typescript",
-# )
-
-# We use git_repository since Renovate knows how to update it.
-# With http_archive it only sees releases/download/*.tar.gz urls
-git_repository(
+local_repository(
     name = "build_bazel_rules_typescript",
-    commit = "951ae46a9651e9f6814b303c5902d858cc509aa4",
-    patch_args = ["-p1"],
-    patches = ["//:rules_typescript.patch"],
-    remote = "http://github.com/bazelbuild/rules_typescript.git",
+    path = "../bazel-rules-typescript",
 )
+
+# # We use git_repository since Renovate knows how to update it.
+# # With http_archive it only sees releases/download/*.tar.gz urls
+# git_repository(
+#     name = "build_bazel_rules_typescript",
+#     commit = "951ae46a9651e9f6814b303c5902d858cc509aa4",
+#     patch_args = ["-p1"],
+#     patches = ["//:rules_typescript.patch"],
+#     remote = "http://github.com/bazelbuild/rules_typescript.git",
+# )
 
 # We have a source dependency on build_bazel_rules_typescript
 # so we must repeat its transitive toolchain deps
