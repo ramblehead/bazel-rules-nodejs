@@ -1,8 +1,0 @@
-package(default_visibility = ["//internal/linker/test:__subpackages__"])
-
-load("//:index.bzl", "copy_to_bin")
-
-copy_to_bin(
-    name = "copy_to_bin",
-    srcs = ["index.js"],
-)

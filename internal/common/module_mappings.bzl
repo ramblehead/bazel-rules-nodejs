@@ -19,8 +19,7 @@
 # the transitive closure, rolling these up to provide a mapping to the
 # TypeScript compiler and to editors.
 #
-
-"""Helper function and aspect to get module mappings from deps
+"""Module mappings.
 """
 
 def _get_deps(attrs, names):
@@ -32,13 +31,11 @@ def _get_deps(attrs, names):
     ]
 
 # Traverse 'srcs' in addition so that we can go across a genrule
-_MODULE_MAPPINGS_DEPS_NAMES = (
-    ["deps", "srcs"]
-)
+_MODULE_MAPPINGS_DEPS_NAMES = ["deps", "srcs", "_helpers"]
 
 _DEBUG = False
 
-def _debug(msg, values = ()):
+def debug(msg, values = ()):
     if _DEBUG:
         print(msg % values)
 
@@ -51,14 +48,14 @@ def get_module_mappings(label, attrs, srcs = [], workspace_name = None, mappings
     `module_name`.
 
     Args:
-      label: label
-      attrs: attributes
-      srcs: sources (defaults to [])
-      workspace_name: workspace name (defaults to None)
-      mappings_attr: mappings attribute to look for (defaults to "es6_module_mappings")
+      label: The label declaring a module mapping
+      attrs: Attributes on that label
+      srcs: The srcs attribute, used to validate that these are under the root
+      workspace_name: name of the workspace where the user is building
+      mappings_attr: name of the attribute we use to hand down transitive data
 
     Returns:
-      The module mappings
+      the module_mappings from the given attrs.
     """
     mappings = dict()
     all_deps = _get_deps(attrs, names = _MODULE_MAPPINGS_DEPS_NAMES)
@@ -75,28 +72,15 @@ def get_module_mappings(label, attrs, srcs = [], workspace_name = None, mappings
         mn = attrs.module_name
         if not mn:
             mn = label.name
-        mr = label.package
-        if workspace_name:
-            mr = "%s/%s" % (workspace_name, mr)
-        elif label.workspace_root:
-            mr = "%s/%s" % (label.workspace_root, mr)
+        mr = "/".join([p for p in [
+            workspace_name or label.workspace_root,
+            label.package,
+        ] if p])
         if attrs.module_root and attrs.module_root != ".":
+            mr = "%s/%s" % (mr, attrs.module_root)
             if attrs.module_root.endswith(".ts"):
                 if workspace_name:
-                    # workspace_name is set only when doing module mapping for runtime.
-                    # .d.ts module_root means we should be able to load in two ways:
-                    #   module_name -> module_path/module_root.js
-                    #   module_name/foo -> module_path/foo
-                    # So we add two mappings. The one with the trailing slash is longer,
-                    # so the loader should prefer it for any deep imports. The mapping
-                    # without the trailing slash will be used only when importing from the
-                    # bare module_name.
-                    mappings[mn + "/"] = mr + "/"
-                    mr = "%s/%s" % (mr, attrs.module_root.replace(".d.ts", ".js"))
-                else:
-                    # This is the type-checking module mapping. Strip the trailing .d.ts
-                    # as it doesn't belong in TypeScript's path mapping.
-                    mr = "%s/%s" % (mr, attrs.module_root.replace(".d.ts", ""))
+                    mr = mr.replace(".d.ts", "")
 
                 # Validate that sources are underneath the module root.
                 # module_roots ending in .ts are a special case, they are used to
@@ -105,16 +89,24 @@ def get_module_mappings(label, attrs, srcs = [], workspace_name = None, mappings
                 # given module root.
 
             else:
-                mr = "%s/%s" % (mr, attrs.module_root)
                 for s in srcs:
-                    if not s.short_path.startswith(mr):
+                    short_path = s.short_path
+
+                    # Execroot paths for external repositories should start with external/
+                    # But the short_path property of file gives the relative path from our workspace
+                    # instead. We must correct this to compare with the module_root which is an
+                    # execroot path.
+                    if short_path.startswith("../"):
+                        short_path = "external/" + short_path[3:]
+                    if not short_path.startswith(mr):
                         fail(("all sources must be under module root: %s, but found: %s" %
-                              (mr, s.short_path)))
+                              (mr, short_path)))
         if mn in mappings and mappings[mn] != mr:
             fail(("duplicate module mapping at %s: %s maps to both %s and %s" %
                   (label, mn, mappings[mn], mr)), "deps")
         mappings[mn] = mr
-    _debug("Mappings at %s: %s", (label, mappings))
+
+    debug("Mappings at %s: %s", (label, mappings))
     return mappings
 
 def _module_mappings_aspect_impl(target, ctx):

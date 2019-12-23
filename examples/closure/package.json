@@ -1,6 +1,0 @@
-{
-    "private": true,
-    "dependencies": {
-        "google-closure-compiler": "20190729.0.0"
-    }
-}
