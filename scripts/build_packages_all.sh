@@ -9,4 +9,3 @@ readonly RULES_NODEJS_DIR=$(cd $(dirname "$0")/..; pwd)
 source "${RULES_NODEJS_DIR}/scripts/packages.sh"
 
 ${RULES_NODEJS_DIR}/scripts/build_packages.sh ${PACKAGES[@]}
-
