@@ -1,10 +1,9 @@
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+# bazel_skylib mocked out
+# load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@build_bazel_rules_nodejs//:index.bzl", bzl_library = "dummy_bzl_library")
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
 
-# BEGIN-INTERNAL
-load("@npm_bazel_jasmine//:index.from_src.bzl", "jasmine_node_test")
 
-# END-INTERNAL
 package(default_visibility = ["//visibility:public"])
 
 exports_files(["pkg_web.bzl"])
@@ -27,19 +26,7 @@ nodejs_binary(
     node_modules = ":node_modules_none",
 )
 
-# BEGIN-INTERNAL
-jasmine_node_test(
-    name = "assembler_test",
-    srcs = ["assembler_spec.js"],
-    tags = [
-        "fix-windows",
-    ],
-    deps = [
-        "assembler.js",
-    ],
-)
 
-# END-INTERNAL
 filegroup(
     name = "package_contents",
     srcs = glob(
